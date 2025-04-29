@@ -52,7 +52,7 @@
   </table>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzflfWLYSrzsZ581mNbTKKG7A5A1g4hT9y2RvT1yeA2NfTS-Kjl65lANAIq5yFzgjG-PA/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw7BUzkKBErqnXkTg_CRUnAbBeyKSRV3YCUm9vzXR8yYcZdO7Y9ZjZGy61oo_5TJQ77aA/exec';
 
     async function search() {
       const q = document.getElementById('searchBox').value;
@@ -74,7 +74,8 @@
         });
       } catch (error) {
         console.error('검색 중 오류 발생:', error);
-        document.getElementById('resultBody').innerHTML = `<tr><td colspan="4">검색 중 오류가 발생했습니다.</td></tr>`;
+        document.getElementById('resultBody').innerHTML =
+          `<tr><td colspan="4">검색 중 오류가 발생했습니다.</td></tr>`;
       }
     }
   </script>

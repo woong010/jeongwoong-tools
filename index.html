@@ -52,25 +52,30 @@
   </table>
 
   <script>
-    const API_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLhjsYh7-_MSodyaX9slbiYbs1x1Yt24g33JGc71ExwW8HVtfE3APld4ok67B5vma2MOxYBvxAf2j3tPfrkXDSC9amt8E0ZyZ5sV8I507-GOKsZfTKd78HzxFIuz7s9ZN6WpbK18bu6TBK7lQXd4A8SB2q5w&lib=M4P4YIsB5zJQ0eE3EuXknGoQk9XkF3eUQ';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzflfWLYSrzsZ581mNbTKKG7A5A1g4hT9y2RvT1yeA2NfTS-Kjl65lANAIq5yFzgjG-PA/exec';
 
     async function search() {
       const q = document.getElementById('searchBox').value;
-      const response = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
-      const data = await response.json();
+      try {
+        const response = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
+        const data = await response.json();
 
-      const tbody = document.getElementById('resultBody');
-      tbody.innerHTML = '';
+        const tbody = document.getElementById('resultBody');
+        tbody.innerHTML = '';
 
-      data.forEach(item => {
-        const row = `<tr>
-          <td>${item['제품명'] || ''}</td>
-          <td>${item['규격'] || ''}</td>
-          <td>${item['메이커'] || ''}</td>
-          <td>${item['단가'] || ''}</td>
-        </tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
-      });
+        data.forEach(item => {
+          const row = `<tr>
+            <td>${item['제품명'] || ''}</td>
+            <td>${item['규격'] || ''}</td>
+            <td>${item['메이커'] || ''}</td>
+            <td>${item['단가'] || ''}</td>
+          </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
+      } catch (error) {
+        console.error('검색 중 오류 발생:', error);
+        document.getElementById('resultBody').innerHTML = `<tr><td colspan="4">검색 중 오류가 발생했습니다.</td></tr>`;
+      }
     }
   </script>
 </body>

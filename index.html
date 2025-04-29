@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>제품 검색기</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
       background: #f4f4f8;
+      padding: 20px;
+      margin: 0;
     }
 
     h1 {
@@ -30,8 +30,7 @@
       border: 2px solid #ccc;
       border-radius: 25px;
       font-size: 16px;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
+      transition: 0.3s;
     }
 
     .search-container input:focus {
@@ -43,8 +42,8 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      background: white;
       margin-top: 10px;
-      background-color: white;
       box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
     }
 
@@ -56,36 +55,16 @@
     }
 
     th {
-      background-color: #f0f0f0;
-      color: #333;
+      background: #eee;
     }
 
     @media screen and (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
+      table {
+        font-size: 14px;
       }
-
-      th {
-        display: none;
+      .search-container input {
+        font-size: 14px;
       }
-
-      td {
-        position: relative;
-        padding-left: 50%;
-      }
-
-      td::before {
-        position: absolute;
-        top: 12px;
-        left: 16px;
-        width: 45%;
-        white-space: nowrap;
-        font-weight: bold;
-      }
-
-      td:nth-of-type(1)::before { content: "제품명"; }
-      td:nth-of-type(2)::before { content: "규격"; }
-      td:nth-of-type(3)::before { content: "단가"; }
     }
   </style>
 </head>
@@ -94,59 +73,45 @@
   <h1>📦 제품 검색기</h1>
 
   <div class="search-container">
-    <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="제품명 또는 규격을 입력하세요...">
+    <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="품명 또는 규격을 입력하세요...">
   </div>
 
   <table id="productTable">
     <thead>
       <tr>
-        <th>제품명</th>
+        <th>품명</th>
         <th>규격</th>
+        <th>메이커</th>
         <th>단가</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>망치</td>
-        <td>중형</td>
-        <td>12,000</td>
-      </tr>
-      <tr>
-        <td>드릴</td>
-        <td>18V</td>
-        <td>98,000</td>
-      </tr>
-      <tr>
-        <td>나사못</td>
-        <td>50mm</td>
-        <td>1,000</td>
-      </tr>
-      <!-- 여기에 실제 제품 데이터를 엑셀이나 Google Sheets에서 자동 연동 가능 -->
+      <tr><td>KTC 콤비세트 11PCS 미리세트</td><td></td><td></td><td>0</td></tr>
+      <tr><td>KTC 콤비세트 14PCS 미리세트</td><td>TMS214-mm</td><td></td><td>0</td></tr>
+      <tr><td>엠시피피(500㎖)</td><td></td><td></td><td>22000</td></tr>
+      <tr><td>회전문/센서/감은기/적외선/레이더</td><td>PIR20/31</td><td></td><td>0</td></tr>
+      <tr><td>(중1국)</td><td>2.4*80M(흰색)</td><td></td><td>12000</td></tr>
+      <!-- 추가 데이터 필요하면 여기 이어서 삽입 -->
     </tbody>
   </table>
 
   <script>
     function searchTable() {
-      const input = document.getElementById("searchInput");
-      const filter = input.value.toLowerCase();
+      const input = document.getElementById("searchInput").value.toLowerCase();
       const table = document.getElementById("productTable");
       const trs = table.getElementsByTagName("tr");
 
-      for (let i = 1; i < trs.length; i++) {
-        const tds = trs[i].getElementsByTagName("td");
-        let match = false;
+      for (let i = 1; i < trs.length; i++) { // 첫줄은 th
+        const tdName = trs[i].getElementsByTagName("td")[0]; // 품명
+        const tdSpec = trs[i].getElementsByTagName("td")[1]; // 규격
+        const nameText = tdName ? tdName.textContent.toLowerCase() : "";
+        const specText = tdSpec ? tdSpec.textContent.toLowerCase() : "";
 
-        for (let j = 0; j < tds.length; j++) {
-          if (tds[j]) {
-            const txtValue = tds[j].textContent || tds[j].innerText;
-            if (txtValue.toLowerCase().indexOf(filter) > -1) {
-              match = true;
-              break;
-            }
-          }
+        if (nameText.includes(input) || specText.includes(input)) {
+          trs[i].style.display = "";
+        } else {
+          trs[i].style.display = "none";
         }
-
-        trs[i].style.display = match ? "" : "none";
       }
     }
   </script>

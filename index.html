@@ -1,83 +1,85 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>제품 검색기</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    h1 {
-      text-align: center;
-    }
-    input[type="text"] {
-      display: block;
-      margin: 0 auto 20px auto;
-      padding: 10px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>제품 검색</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-  <h1>📦 제품 검색</h1>
-  <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="검색할 품명을 입력하세요...">
-  <table id="productTable">
-    <thead>
-      <tr>
-        <th>품명</th>
-        <th>규격</th>
-        <th>단가</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>망치</td>
-        <td>중형</td>
-        <td>12,000</td>
-      </tr>
-      <tr>
-        <td>드릴</td>
-        <td>18V</td>
-        <td>98,000</td>
-      </tr>
-      <tr>
-        <td>나사못</td>
-        <td>50mm</td>
-        <td>1,000</td>
-      </tr>
-    </tbody>
-  </table>
+    <h2>🔍 제품 검색</h2>
+    <input type="text" id="searchBox" placeholder="제품명 또는 규격을 입력하세요..." onkeyup="searchProduct()">
+    <div id="results"></div>
 
-  <script>
-    function searchTable() {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      const trs = document.querySelectorAll("#productTable tbody tr");
-      trs.forEach(tr => {
-        const text = tr.textContent.toLowerCase();
-        tr.style.display = text.includes(input) ? "" : "none";
-      });
-    }
-  </script>
+    <script>
+        let products = [];
+
+        // 구글 스프레드시트 CSV 불러오기
+        Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSEvkiHLoR3h1gtbLiQWmqZYhk3j_uDWs1D8i7RFfhvIX-1-7L_6f6Cv18r0ME6EX7FIhqNPpqFJym7/pub?output=csv', {
+            download: true,
+            header: true,
+            complete: function(results) {
+                products = results.data;
+                displayProducts(products);
+            }
+        });
+
+        function searchProduct() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const filtered = products.filter(product =>
+                (product['제품명'] && product['제품명'].toLowerCase().includes(query)) ||
+                (product['규격'] && product['규격'].toLowerCase().includes(query))
+            );
+            displayProducts(filtered);
+        }
+
+        function displayProducts(items) {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            items.forEach(item => {
+                const maker = item['메이커'] ? item['메이커'] : '정보 없음';
+                const formattedPrice = item['단가'] ? Number(item['단가']).toLocaleString() + '원' : '가격 정보 없음';
+                const card = `
+                    <div class="card">
+                        <strong>제품명: ${item['제품명'] || ''}</strong>
+                        <strong>규격: ${item['규격'] || ''}</strong>
+                        <strong>메이커: ${maker}</strong>
+                        <strong>가격: ${formattedPrice}</strong>
+                    </div>
+                `;
+                results.innerHTML += card;
+            });
+        }
+    </script>
 </body>
 </html>

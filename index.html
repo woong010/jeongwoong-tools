@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>제품 검색</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -38,47 +37,49 @@
 </head>
 <body>
     <h2>🔍 제품 검색</h2>
-    <input type="text" id="searchBox" placeholder="제품명 또는 규격을 입력하세요..." onkeyup="searchProduct()">
+    <input type="text" id="searchBox" placeholder="제품명 또는 규격을 입력하세요...">
     <div id="results"></div>
 
     <script>
-        let products = [];
+        const API_URL = "https://script.google.com/macros/s/AKfycbzOtWlJLIv4TWuyVv4bsqBvbzywru2qHAQ_3wnxIprhw8YsWYerYrJZ2_osPXLhRpcR/exec";
 
-        // 구글 스프레드시트 CSV 불러오기
-        Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSEvkiHLoR3h1gtbLiQWmqZYhk3j_uDWs1D8i7RFfhvIX-1-7L_6f6Cv18r0ME6EX7FIhqNPpqFJym7/pub?output=csv', {
-            download: true,
-            header: true,
-            complete: function(results) {
-                products = results.data;
-                displayProducts(products);
-            }
+        let debounceTimer;
+        document.getElementById('searchBox').addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(searchProduct, 150);
         });
 
-        function searchProduct() {
-            const query = document.getElementById('searchBox').value.toLowerCase();
-            const filtered = products.filter(product =>
-                (product['제품명'] && product['제품명'].toLowerCase().includes(query)) ||
-                (product['규격'] && product['규격'].toLowerCase().includes(query))
-            );
-            displayProducts(filtered);
+        async function searchProduct() {
+            const query = document.getElementById('searchBox').value.trim();
+            if (query.length < 2) {
+                document.getElementById('results').innerHTML = "<p>2글자 이상 입력하세요</p>";
+                return;
+            }
+
+            const response = await fetch(`${API_URL}?q=${encodeURIComponent(query)}`);
+            const items = await response.json();
+            displayProducts(items);
         }
 
         function displayProducts(items) {
             const results = document.getElementById('results');
-            results.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
             items.forEach(item => {
-                const maker = item['메이커'] ? item['메이커'] : '정보 없음';
-                const formattedPrice = item['단가'] ? Number(item['단가']).toLocaleString() + '원' : '가격 정보 없음';
-                const card = `
-                    <div class="card">
-                        <strong>제품명: ${item['제품명'] || ''}</strong>
-                        <strong>규격: ${item['규격'] || ''}</strong>
-                        <strong>메이커: ${maker}</strong>
-                        <strong>가격: ${formattedPrice}</strong>
-                    </div>
+                const card = document.createElement('div');
+                card.className = 'card';
+                const price = item['단가'] ? Number(item['단가']).toLocaleString() + '원' : '가격 정보 없음';
+                card.innerHTML = `
+                    <strong>제품명: ${item['제품명'] || ''}</strong>
+                    <strong>규격: ${item['규격'] || ''}</strong>
+                    <strong>메이커: ${item['메이커'] || '정보 없음'}</strong>
+                    <strong>가격: ${price}</strong>
                 `;
-                results.innerHTML += card;
+                fragment.appendChild(card);
             });
+
+            results.innerHTML = '';
+            results.appendChild(fragment);
         }
     </script>
 </body>

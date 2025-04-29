@@ -2,82 +2,90 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>제품 검색기</title>
+  <title>제품 검색</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       background: #f4f4f4;
+      margin: 0;
     }
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
     input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
+      padding: 14px;
+      margin-bottom: 24px;
       font-size: 16px;
+      border: 1px solid #888;
+      border-radius: 8px;
+      box-sizing: border-box;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
+    .card {
+      background: white;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-    th {
-      background-color: #e0e0e0;
+    .card p {
+      margin: 6px 0;
     }
   </style>
 </head>
 <body>
   <h2>제품 검색</h2>
   <input type="text" id="searchBox" placeholder="제품명 또는 규격을 입력하세요" oninput="search()">
-  <table>
-    <thead>
-      <tr>
-        <th>제품명</th>
-        <th>규격</th>
-        <th>메이커</th>
-        <th>단가</th>
-      </tr>
-    </thead>
-    <tbody id="resultBody">
-      <!-- 검색 결과가 여기에 표시됨 -->
-    </tbody>
-  </table>
+  <div id="resultContainer"></div>
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw7BUzkKBErqnXkTg_CRUnAbBeyKSRV3YCUm9vzXR8yYcZdO7Y9ZjZGy61oo_5TJQ77aA/exec';
+    let allData = [];
 
-    async function search() {
-      const q = document.getElementById('searchBox').value;
+    async function loadData() {
       try {
-        const response = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
-        const data = await response.json();
-
-        const tbody = document.getElementById('resultBody');
-        tbody.innerHTML = '';
-
-        data.forEach(item => {
-          const row = `<tr>
-            <td>${item['제품명'] || ''}</td>
-            <td>${item['규격'] || ''}</td>
-            <td>${item['메이커'] || ''}</td>
-            <td>${item['단가'] || ''}</td>
-          </tr>`;
-          tbody.insertAdjacentHTML('beforeend', row);
-        });
+        const response = await fetch(API_URL);
+        allData = await response.json();
+        search();
       } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-        document.getElementById('resultBody').innerHTML =
-          `<tr><td colspan="4">검색 중 오류가 발생했습니다.</td></tr>`;
+        document.getElementById('resultContainer').innerHTML = '<p>데이터를 불러오는 데 실패했습니다.</p>';
+        console.error('데이터 로딩 오류:', error);
       }
     }
+
+    function search() {
+      const q = document.getElementById('searchBox').value.toLowerCase();
+      const container = document.getElementById('resultContainer');
+      container.innerHTML = '';
+
+      const results = allData.filter(item => {
+        const name = (item['제품명'] || '').toLowerCase();
+        const spec = (item['규격'] || '').toLowerCase();
+        return name.includes(q) || spec.includes(q);
+      });
+
+      if (results.length === 0) {
+        container.innerHTML = '<p>검색 결과가 없습니다.</p>';
+        return;
+      }
+
+      results.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <p><strong>제품명:</strong> ${item['제품명'] || ''}</p>
+          <p><strong>규격:</strong> ${item['규격'] || ''}</p>
+          <p><strong>메이커:</strong> ${item['메이커'] || ''}</p>
+          <p><strong>가격:</strong> ${item['단가'] || ''}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.onload = loadData;
   </script>
 </body>
 </html>
